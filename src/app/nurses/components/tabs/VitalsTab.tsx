@@ -125,7 +125,7 @@ export default function VitalsTab() {
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-700">Vitals Monitoring</h3>
+          <h3 className="text-lg font-medium text-gray-800">Vitals Monitoring</h3>
           <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-2">
             <select
               className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
@@ -155,7 +155,7 @@ export default function VitalsTab() {
               <form onSubmit={handleVitalFormSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Patient</label>
                     <select 
                       name="patientId" 
                       value={vitalForm.patientId} 
@@ -171,7 +171,7 @@ export default function VitalsTab() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Temperature</label>
                     <input 
                       type="text" 
                       name="temperature" 
@@ -182,7 +182,7 @@ export default function VitalsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Blood Pressure</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Blood Pressure</label>
                     <input 
                       type="text" 
                       name="bloodPressure" 
@@ -193,7 +193,7 @@ export default function VitalsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Heart Rate</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Heart Rate</label>
                     <input 
                       type="text" 
                       name="heartRate" 
@@ -204,7 +204,7 @@ export default function VitalsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Respiration Rate</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Respiration Rate</label>
                     <input 
                       type="text" 
                       name="respiration" 
@@ -215,7 +215,7 @@ export default function VitalsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Oxygen Saturation</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Oxygen Saturation</label>
                     <input 
                       type="text" 
                       name="oxygenSaturation" 
@@ -226,7 +226,7 @@ export default function VitalsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Pain Level (0-10)</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Pain Level (0-10)</label>
                     <div className="flex items-center">
                       <input 
                         type="range" 
@@ -241,7 +241,7 @@ export default function VitalsTab() {
                     </div>
                   </div>
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Notes</label>
                     <textarea 
                       name="notes" 
                       value={vitalForm.notes} 
@@ -256,7 +256,7 @@ export default function VitalsTab() {
                   <button 
                     type="button" 
                     onClick={() => setIsRecordingVitals(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-800 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -271,34 +271,34 @@ export default function VitalsTab() {
             </div>
           ) : null}
 
-          <h4 className="text-base font-medium text-gray-700 mb-3">Vital Signs History</h4>
+          <h4 className="text-base font-medium text-gray-800 mb-3">Vital Signs History</h4>
           
           {/* Table for medium-large screens */}
           <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temp</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BP</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">HR</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RR</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">O2</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pain</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Patient</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Time</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Temp</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">BP</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">HR</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">RR</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">O2</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Pain</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredVitals.map((vital) => (
                   <tr key={vital.id}>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-800">{vital.patientName}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.recordedAt}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.temperature}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.bloodPressure}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.heartRate}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.respiration}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{vital.oxygenSaturation}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{vital.patientName}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.recordedAt}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.temperature}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.bloodPressure}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.heartRate}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.respiration}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{vital.oxygenSaturation}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">
                       <div className="flex items-center">
                         <div className="w-8 h-4 bg-gradient-to-r from-green-500 to-red-500 rounded-full mr-2"></div>
@@ -319,36 +319,36 @@ export default function VitalsTab() {
             {filteredVitals.map((vital) => (
               <div key={vital.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-2 flex justify-between items-center">
-                  <span className="font-medium text-gray-800">{vital.patientName}</span>
-                  <span className="text-xs text-gray-500">{vital.recordedAt}</span>
+                  <span className="font-medium text-gray-900">{vital.patientName}</span>
+                  <span className="text-xs text-gray-700">{vital.recordedAt}</span>
                 </div>
                 <div className="p-4">
                   <div className="grid grid-cols-3 gap-2 text-sm mb-3">
                     <div>
-                      <span className="text-xs text-gray-500">Temp</span>
-                      <p className="text-gray-700">{vital.temperature}</p>
+                      <span className="text-xs text-gray-700">Temp</span>
+                      <p className="text-gray-800">{vital.temperature}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">BP</span>
-                      <p className="text-gray-700">{vital.bloodPressure}</p>
+                      <span className="text-xs text-gray-700">BP</span>
+                      <p className="text-gray-800">{vital.bloodPressure}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">HR</span>
-                      <p className="text-gray-700">{vital.heartRate}</p>
+                      <span className="text-xs text-gray-700">HR</span>
+                      <p className="text-gray-800">{vital.heartRate}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">RR</span>
-                      <p className="text-gray-700">{vital.respiration}</p>
+                      <span className="text-xs text-gray-700">RR</span>
+                      <p className="text-gray-800">{vital.respiration}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">O2</span>
-                      <p className="text-gray-700">{vital.oxygenSaturation}</p>
+                      <span className="text-xs text-gray-700">O2</span>
+                      <p className="text-gray-800">{vital.oxygenSaturation}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">Pain</span>
+                      <span className="text-xs text-gray-700">Pain</span>
                       <div className="flex items-center">
                         <div className="w-6 h-3 bg-gradient-to-r from-green-500 to-red-500 rounded-full mr-1"></div>
-                        <p className="text-gray-700">{vital.painLevel}</p>
+                        <p className="text-gray-800">{vital.painLevel}</p>
                       </div>
                     </div>
                   </div>

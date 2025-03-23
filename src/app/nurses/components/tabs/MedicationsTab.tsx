@@ -99,7 +99,7 @@ export default function MedicationsTab() {
       case 'Completed': return 'text-blue-700 bg-blue-100';
       case 'On Hold': return 'text-yellow-700 bg-yellow-100';
       case 'Discontinued': return 'text-red-700 bg-red-100';
-      default: return 'text-gray-700 bg-gray-100';
+      default: return 'text-gray-800 bg-gray-100';
     }
   };
 
@@ -125,11 +125,11 @@ export default function MedicationsTab() {
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-700">Medications Management</h3>
+          <h3 className="text-lg font-medium text-gray-800">Medications Management</h3>
           <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-2">
             <div className="relative flex-grow max-w-xs">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -177,19 +177,19 @@ export default function MedicationsTab() {
                 <div className="bg-white p-3 rounded border border-blue-200 mb-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div>
-                      <span className="text-xs text-gray-500 block">Patient</span>
+                      <span className="text-xs text-gray-700 block">Patient</span>
                       <p className="font-medium">{administeringMed.patientName}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 block">Medication</span>
+                      <span className="text-xs text-gray-700 block">Medication</span>
                       <p className="font-medium">{administeringMed.name}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 block">Dosage</span>
+                      <span className="text-xs text-gray-700 block">Dosage</span>
                       <p className="font-medium">{administeringMed.dosage}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 block">Frequency</span>
+                      <span className="text-xs text-gray-700 block">Frequency</span>
                       <p className="font-medium">{administeringMed.frequency}</p>
                     </div>
                   </div>
@@ -197,7 +197,7 @@ export default function MedicationsTab() {
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date & Time Administered</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Date & Time Administered</label>
                     <input 
                       type="datetime-local" 
                       className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
@@ -205,7 +205,7 @@ export default function MedicationsTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Administered By</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Administered By</label>
                     <input 
                       type="text" 
                       className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
@@ -214,7 +214,7 @@ export default function MedicationsTab() {
                     />
                   </div>
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Notes</label>
                     <textarea 
                       className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
                       rows={3}
@@ -227,7 +227,7 @@ export default function MedicationsTab() {
                   <button 
                     type="button" 
                     onClick={() => setIsAdministeringMed(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-800 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
@@ -247,25 +247,25 @@ export default function MedicationsTab() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medication</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosage</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequency</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dates</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Medication</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Patient</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Dosage</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Frequency</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Dates</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMedications.map((med) => (
                   <tr key={med.id} className={selectedMedication === med.id ? 'bg-blue-50' : ''}>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{med.name}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-800">
-                      {med.patientName} <span className="text-xs text-gray-500">({med.patientId})</span>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {med.patientName} <span className="text-xs text-gray-700">({med.patientId})</span>
                     </td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{med.dosage}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{med.frequency}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{med.startDate} - {med.endDate}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{med.dosage}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{med.frequency}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{med.startDate} - {med.endDate}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(med.status)}`}>
                         {med.status}
@@ -299,8 +299,8 @@ export default function MedicationsTab() {
               <div key={med.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex justify-between items-center">
                   <div>
-                    <span className="font-medium text-gray-800">{med.name}</span>
-                    <span className="ml-2 text-xs text-gray-500">{med.dosage}</span>
+                    <span className="font-medium text-gray-900">{med.name}</span>
+                    <span className="ml-2 text-xs text-gray-700">{med.dosage}</span>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(med.status)}`}>
                     {med.status}
@@ -309,28 +309,28 @@ export default function MedicationsTab() {
                 <div className="p-4">
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     <div className="col-span-2">
-                      <span className="text-xs text-gray-500">Patient</span>
-                      <p className="text-gray-700">{med.patientName} ({med.patientId})</p>
+                      <span className="text-xs text-gray-700">Patient</span>
+                      <p className="text-gray-800">{med.patientName} ({med.patientId})</p>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-xs text-gray-500">Frequency</span>
-                      <p className="text-gray-700">{med.frequency}</p>
+                      <span className="text-xs text-gray-700">Frequency</span>
+                      <p className="text-gray-800">{med.frequency}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">Start Date</span>
-                      <p className="text-gray-700">{med.startDate}</p>
+                      <span className="text-xs text-gray-700">Start Date</span>
+                      <p className="text-gray-800">{med.startDate}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">End Date</span>
-                      <p className="text-gray-700">{med.endDate}</p>
+                      <span className="text-xs text-gray-700">End Date</span>
+                      <p className="text-gray-800">{med.endDate}</p>
                     </div>
                   </div>
                   
                   {selectedMedication === med.id && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <div>
-                        <span className="text-xs text-gray-500">Instructions</span>
-                        <p className="text-gray-700">{med.instructions}</p>
+                        <span className="text-xs text-gray-700">Instructions</span>
+                        <p className="text-gray-800">{med.instructions}</p>
                       </div>
                     </div>
                   )}
@@ -375,14 +375,14 @@ export default function MedicationsTab() {
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
-                        <h5 className="text-sm font-medium text-gray-500 mb-1">Medication Information</h5>
+                        <h5 className="text-sm font-medium text-gray-700 mb-1">Medication Information</h5>
                         <p className="text-sm mb-1"><span className="font-medium">Name:</span> {med.name}</p>
                         <p className="text-sm mb-1"><span className="font-medium">Dosage:</span> {med.dosage}</p>
                         <p className="text-sm"><span className="font-medium">Frequency:</span> {med.frequency}</p>
                       </div>
                       
                       <div>
-                        <h5 className="text-sm font-medium text-gray-500 mb-1">Schedule</h5>
+                        <h5 className="text-sm font-medium text-gray-700 mb-1">Schedule</h5>
                         <p className="text-sm mb-1"><span className="font-medium">Start Date:</span> {med.startDate}</p>
                         <p className="text-sm mb-1"><span className="font-medium">End Date:</span> {med.endDate}</p>
                         <p className="text-sm">
@@ -394,14 +394,14 @@ export default function MedicationsTab() {
                       </div>
                       
                       <div>
-                        <h5 className="text-sm font-medium text-gray-500 mb-1">Patient</h5>
+                        <h5 className="text-sm font-medium text-gray-700 mb-1">Patient</h5>
                         <p className="text-sm mb-1"><span className="font-medium">Name:</span> {med.patientName}</p>
                         <p className="text-sm mb-1"><span className="font-medium">ID:</span> {med.patientId}</p>
                       </div>
                     </div>
                     
                     <div className="mt-4">
-                      <h5 className="text-sm font-medium text-gray-500 mb-1">Instructions</h5>
+                      <h5 className="text-sm font-medium text-gray-700 mb-1">Instructions</h5>
                       <p className="text-sm bg-white p-3 rounded border border-blue-200">{med.instructions}</p>
                     </div>
                     

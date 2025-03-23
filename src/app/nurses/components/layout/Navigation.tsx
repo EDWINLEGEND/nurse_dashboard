@@ -26,7 +26,7 @@ export default function Navigation({ activeTab, setActiveTab }: NavigationProps)
             {tabs.map((tab: Tab) => (
               <button 
                 key={tab.id}
-                className={`flex items-center justify-center rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out m-0.5 ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                className={`flex items-center justify-center rounded-md px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200 ease-in-out m-0.5 ${activeTab === tab.id ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 <svg className={`h-3.5 sm:h-4 w-3.5 sm:w-4 mr-1 ${activeTab === tab.id ? 'text-white' : 'text-blue-600'}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

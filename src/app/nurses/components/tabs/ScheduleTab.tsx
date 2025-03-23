@@ -212,6 +212,16 @@ export default function ScheduleTab() {
     }
   };
 
+  const getStatusColor = (status: Task['status']) => {
+    switch (status) {
+      case 'Completed': return 'text-green-700 bg-green-100';
+      case 'In Progress': return 'text-blue-700 bg-blue-100';
+      case 'Upcoming': return 'text-yellow-700 bg-yellow-100';
+      case 'Overdue': return 'text-red-700 bg-red-100';
+      default: return 'text-gray-800 bg-gray-100';
+    }
+  };
+
   const handleTaskChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewTask(prev => ({
@@ -241,7 +251,7 @@ export default function ScheduleTab() {
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-700">Schedule</h3>
+          <h3 className="text-lg font-medium text-gray-800">Schedule</h3>
           <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-2">
             <input
               type="date"
@@ -263,7 +273,7 @@ export default function ScheduleTab() {
             </select>
             <div className="relative flex-grow max-w-xs">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -289,8 +299,9 @@ export default function ScheduleTab() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
             {/* Morning Schedule */}
             <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-              <div className="bg-yellow-50 px-4 py-2 border-b border-yellow-100">
-                <h4 className="font-medium text-yellow-800">Morning (6 AM - 12 PM)</h4>
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                <h4 className="font-medium">Morning Shift</h4>
+                <span className="text-gray-700 text-sm">8:00 AM - 12:00 PM</span>
               </div>
               <div className="p-4 space-y-3">
                 {morning.length > 0 ? (
@@ -298,17 +309,17 @@ export default function ScheduleTab() {
                     <div key={task.id} className="bg-white rounded-md shadow-sm border border-gray-200 p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center">
-                          <span className="text-gray-500 text-sm mr-2">{task.startTime} - {task.endTime}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
+                          <span className="text-gray-700 text-sm mr-2">{task.startTime} - {task.endTime}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(task.status)}`}>
+                            {task.status}
                           </span>
                         </div>
-                        <div className="flex items-center text-gray-500">
+                        <div className="flex items-center text-gray-700">
                           {getTypeIcon(task.type)}
                         </div>
                       </div>
-                      <h5 className="font-medium text-gray-800 mb-1">{task.title}</h5>
-                      <p className="text-sm text-gray-600 mb-2">{task.patientName}</p>
+                      <h5 className="font-medium text-gray-900 mb-1">{task.title}</h5>
+                      <p className="text-sm text-gray-700 mb-2">{task.patientName}</p>
                       
                       <button 
                         onClick={() => setViewTask(viewTask === task.id ? null : task.id)} 
@@ -319,7 +330,7 @@ export default function ScheduleTab() {
                       
                       {viewTask === task.id && (
                         <div className="mt-2 pt-2 border-t border-gray-100">
-                          <p className="text-sm text-gray-600">{task.description}</p>
+                          <p className="text-sm text-gray-700">{task.description}</p>
                           <div className="flex space-x-2 mt-2">
                             <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs border border-blue-200">
                               Complete

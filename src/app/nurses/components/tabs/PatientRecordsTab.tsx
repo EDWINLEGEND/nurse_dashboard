@@ -102,7 +102,7 @@ export default function PatientRecordsTab() {
       case 'Improving': return 'text-blue-700 bg-blue-100';
       case 'Critical': return 'text-red-700 bg-red-100';
       case 'Deteriorating': return 'text-orange-700 bg-orange-100';
-      default: return 'text-gray-700 bg-gray-100';
+      default: return 'text-gray-800 bg-gray-100';
     }
   };
 
@@ -116,11 +116,11 @@ export default function PatientRecordsTab() {
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-700">Patient Records</h3>
+          <h3 className="text-lg font-medium text-gray-800">Patient Records</h3>
           <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-2">
             <div className="relative flex-grow max-w-xs">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
               </div>
@@ -152,25 +152,25 @@ export default function PatientRecordsTab() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient ID</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age/Gender</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnosis</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Patient ID</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Name</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Age/Gender</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Room</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Diagnosis</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Doctor</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Status</th>
+                  <th scope="col" className="px-3 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPatients.map((patient) => (
                   <tr key={patient.id} className={showPatientDetails === patient.id ? 'bg-blue-50' : ''}>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{patient.id}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-800">{patient.name}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{patient.age} / {patient.gender}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{patient.roomNumber}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{patient.diagnosis}</td>
-                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-500">{patient.doctor}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">{patient.name}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{patient.age} / {patient.gender}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{patient.roomNumber}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{patient.diagnosis}</td>
+                    <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-700">{patient.doctor}</td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(patient.status)}`}>
                         {patient.status}
@@ -196,8 +196,8 @@ export default function PatientRecordsTab() {
               <div key={patient.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex justify-between items-center">
                   <div>
-                    <span className="font-medium text-gray-800">{patient.name}</span>
-                    <span className="ml-2 text-xs text-gray-500">{patient.id}</span>
+                    <span className="font-medium text-gray-900">{patient.name}</span>
+                    <span className="ml-2 text-xs text-gray-700">{patient.id}</span>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(patient.status)}`}>
                     {patient.status}
@@ -206,20 +206,20 @@ export default function PatientRecordsTab() {
                 <div className="p-4">
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     <div>
-                      <span className="text-xs text-gray-500">Age/Gender</span>
-                      <p className="text-gray-700">{patient.age} / {patient.gender}</p>
+                      <span className="text-xs text-gray-700">Age/Gender</span>
+                      <p className="text-gray-800">{patient.age} / {patient.gender}</p>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500">Room</span>
-                      <p className="text-gray-700">{patient.roomNumber}</p>
+                      <span className="text-xs text-gray-700">Room</span>
+                      <p className="text-gray-800">{patient.roomNumber}</p>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-xs text-gray-500">Diagnosis</span>
-                      <p className="text-gray-700">{patient.diagnosis}</p>
+                      <span className="text-xs text-gray-700">Diagnosis</span>
+                      <p className="text-gray-800">{patient.diagnosis}</p>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-xs text-gray-500">Doctor</span>
-                      <p className="text-gray-700">{patient.doctor}</p>
+                      <span className="text-xs text-gray-700">Doctor</span>
+                      <p className="text-gray-800">{patient.doctor}</p>
                     </div>
                   </div>
                   <div className="flex justify-end mt-3 pt-3 border-t border-gray-100">
@@ -238,18 +238,18 @@ export default function PatientRecordsTab() {
                     <h4 className="text-sm font-medium text-blue-800 mb-2">Patient Details</h4>
                     <div className="space-y-2 text-sm">
                       <div>
-                        <span className="text-xs text-gray-500 block">Admission Date</span>
-                        <p className="text-gray-700">{patient.admissionDate}</p>
+                        <span className="text-xs text-gray-700 block">Admission Date</span>
+                        <p className="text-gray-800">{patient.admissionDate}</p>
                       </div>
                       <div>
-                        <span className="text-xs text-gray-500 block">Allergies</span>
-                        <p className="text-gray-700">
+                        <span className="text-xs text-gray-700 block">Allergies</span>
+                        <p className="text-gray-800">
                           {patient.allergies.length > 0 ? patient.allergies.join(', ') : 'None'}
                         </p>
                       </div>
                       <div>
-                        <span className="text-xs text-gray-500 block">Medical History</span>
-                        <p className="text-gray-700">{patient.medicalHistory}</p>
+                        <span className="text-xs text-gray-700 block">Medical History</span>
+                        <p className="text-gray-800">{patient.medicalHistory}</p>
                       </div>
                     </div>
                     <div className="mt-3 pt-3 border-t border-blue-100 flex space-x-2">
@@ -281,14 +281,14 @@ export default function PatientRecordsTab() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
-                  <h5 className="text-sm font-medium text-gray-500 mb-1">Admission Information</h5>
+                  <h5 className="text-sm font-medium text-gray-700 mb-1">Admission Information</h5>
                   <p className="text-sm mb-1"><span className="font-medium">Date:</span> {selectedPatient.admissionDate}</p>
                   <p className="text-sm mb-1"><span className="font-medium">Room:</span> {selectedPatient.roomNumber}</p>
                   <p className="text-sm"><span className="font-medium">Doctor:</span> {selectedPatient.doctor}</p>
                 </div>
                 
                 <div>
-                  <h5 className="text-sm font-medium text-gray-500 mb-1">Medical Information</h5>
+                  <h5 className="text-sm font-medium text-gray-700 mb-1">Medical Information</h5>
                   <p className="text-sm mb-1"><span className="font-medium">Diagnosis:</span> {selectedPatient.diagnosis}</p>
                   <p className="text-sm mb-1">
                     <span className="font-medium">Allergies:</span> {selectedPatient.allergies.length > 0 ? selectedPatient.allergies.join(', ') : 'None'}
@@ -297,7 +297,7 @@ export default function PatientRecordsTab() {
                 </div>
                 
                 <div>
-                  <h5 className="text-sm font-medium text-gray-500 mb-1">Current Status</h5>
+                  <h5 className="text-sm font-medium text-gray-700 mb-1">Current Status</h5>
                   <p className="text-sm mb-1">
                     <span className="font-medium">Status:</span> 
                     <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${getStatusColor(selectedPatient.status)}`}>

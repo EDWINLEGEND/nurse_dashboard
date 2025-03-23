@@ -48,7 +48,7 @@ export default function TriageTab() {
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-700">Triage</h3>
+          <h3 className="text-lg font-medium text-gray-800">Triage</h3>
           <div className="flex flex-col xs:flex-row w-full sm:w-auto space-y-2 xs:space-y-0 xs:space-x-2">
             <select
               value={triageFilter}
@@ -76,7 +76,7 @@ export default function TriageTab() {
         <div className="p-4 sm:p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h4 className="text-base font-medium text-gray-700 mb-3">Active Triage Cases</h4>
+              <h4 className="text-base font-medium text-gray-800 mb-3">Active Triage Cases</h4>
               <div className="space-y-3">
                 {patientTriageData
                   .filter(patient => triageFilter === 'All Levels' || 
@@ -126,16 +126,16 @@ export default function TriageTab() {
                       <div className="p-3 bg-white">
                         <div className="grid grid-cols-1 gap-2">
                           <div>
-                            <div className="text-xs text-gray-500">Chief Complaint</div>
-                            <div className="text-sm">{patient.complaint}</div>
+                            <div className="text-xs text-gray-700">Chief Complaint</div>
+                            <p className="font-medium">{patient.complaint}</p>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500">Vitals</div>
-                            <div className="text-sm">{patient.vitals}</div>
+                            <div className="text-xs text-gray-700">Vitals</div>
+                            <p className="text-gray-800">{patient.vitals}</p>
                           </div>
                         </div>
                         <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between">
-                          <button className="text-xs bg-gray-50 text-gray-700 px-2 py-1 rounded border border-gray-200">
+                          <button className="text-xs bg-gray-50 text-gray-800 px-2 py-1 rounded border border-gray-200">
                             View Details
                           </button>
                           <button className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200">
@@ -153,7 +153,7 @@ export default function TriageTab() {
               <form onSubmit={handleTriageFormSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Patient ID</label>
                     <input 
                       type="text" 
                       name="patientId" 
@@ -164,7 +164,7 @@ export default function TriageTab() {
                     />
                   </div>
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Chief Complaint</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Chief Complaint</label>
                     <textarea 
                       name="chiefComplaint" 
                       value={triageForm.chiefComplaint} 
@@ -175,7 +175,7 @@ export default function TriageTab() {
                     ></textarea>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Pain Level (1-10)</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Pain Level (1-10)</label>
                     <input 
                       type="range" 
                       name="painLevel" 
@@ -185,13 +185,13 @@ export default function TriageTab() {
                       max="10" 
                       className="w-full" 
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <div className="flex justify-between text-xs text-gray-700 mt-1">
                       <span>No pain (1)</span>
                       <span>Worst pain (10)</span>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Temperature</label>
                     <input 
                       type="text" 
                       name="temperature" 
@@ -202,7 +202,7 @@ export default function TriageTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Blood Pressure</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Blood Pressure</label>
                     <input 
                       type="text" 
                       name="bloodPressure" 
@@ -213,7 +213,7 @@ export default function TriageTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Heart Rate</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Heart Rate</label>
                     <input 
                       type="text" 
                       name="heartRate" 
@@ -224,7 +224,7 @@ export default function TriageTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Respiration Rate</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Respiration Rate</label>
                     <input 
                       type="text" 
                       name="respiration" 
@@ -235,7 +235,7 @@ export default function TriageTab() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Oxygen Saturation</label>
+                    <label className="block text-sm font-medium text-gray-800 mb-1">Oxygen Saturation</label>
                     <input 
                       type="text" 
                       name="oxygenSaturation" 
@@ -260,7 +260,7 @@ export default function TriageTab() {
                         Suggested Triage: Level {suggestedTriageLevel.level} - {suggestedTriageLevel.text}
                       </div>
                     </div>
-                    <p className="text-xs text-gray-700">Based on the pain level and symptoms provided</p>
+                    <p className="text-xs text-gray-800">Based on the pain level and symptoms provided</p>
                   </div>
                 )}
                 
