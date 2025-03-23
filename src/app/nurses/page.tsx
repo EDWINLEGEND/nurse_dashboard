@@ -1,11 +1,339 @@
 "use client";
 
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useState } from 'react';
 
+// Voice recognition hook
+function useVoiceRecognition() {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [error, setError] = useState('');
+  const [recognition, setRecognition] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Check if browser supports SpeechRecognition
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (SpeechRecognition) {
+        const recognitionInstance = new SpeechRecognition();
+        recognitionInstance.continuous = true;
+        recognitionInstance.interimResults = true;
+        recognitionInstance.lang = 'en-US';
+        
+        recognitionInstance.onstart = () => {
+          setIsListening(true);
+        };
+        
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
+        
+        recognitionInstance.onerror = (event) => {
+          setError(event.error);
+          setIsListening(false);
+        };
+        
+        recognitionInstance.onresult = (event) => {
+          const currentTranscript = Array.from(event.results)
+            .map(result => result[0])
+            .map(result => result.transcript)
+            .join('');
+          
+          setTranscript(currentTranscript);
+        };
+        
+        setRecognition(recognitionInstance);
+      } else {
+        setError('Your browser does not support speech recognition');
+      }
+    }
+    
+    return () => {
+      if (recognition) {
+        recognition.stop();
+      }
+    };
+  }, []);
+
+  const startListening = useCallback(() => {
+    if (recognition) {
+      setTranscript('');
+      recognition.start();
+    }
+  }, [recognition]);
+
+  const stopListening = useCallback(() => {
+    if (recognition) {
+      recognition.stop();
+    }
+  }, [recognition]);
+
+  // Format transcript for clinical use
+  const formatTranscript = useCallback((rawTranscript) => {
+    if (!rawTranscript) return '';
+    
+    // Split into sentences
+    const sentences = rawTranscript.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0);
+    
+    // Group by potential clinical categories
+    const formattedText = {
+      symptoms: [],
+      observations: [],
+      vitals: [],
+      plans: []
+    };
+    
+    // Simple rule-based categorization
+    sentences.forEach(sentence => {
+      const lowerSentence = sentence.toLowerCase().trim();
+      
+      if (lowerSentence.includes('complain') || 
+          lowerSentence.includes('pain') || 
+          lowerSentence.includes('report') ||
+          lowerSentence.includes('symptom')) {
+        formattedText.symptoms.push(sentence.trim());
+      } else if (lowerSentence.includes('vital') || 
+                lowerSentence.includes('bp') || 
+                lowerSentence.includes('temperature') ||
+                lowerSentence.includes('pulse') ||
+                lowerSentence.includes('heart rate')) {
+        formattedText.vitals.push(sentence.trim());
+      } else if (lowerSentence.includes('plan') || 
+                lowerSentence.includes('recommend') || 
+                lowerSentence.includes('advised') ||
+                lowerSentence.includes('should')) {
+        formattedText.plans.push(sentence.trim());
+      } else {
+        formattedText.observations.push(sentence.trim());
+      }
+    });
+    
+    return formattedText;
+  }, []);
+
+  return { 
+    isListening, 
+    transcript, 
+    error, 
+    startListening, 
+    stopListening,
+    formatTranscript 
+  };
+}
+
 export default function NurseDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [newTask, setNewTask] = useState({
+    patient: 'Patient 001',
+    taskType: 'Medication',
+    description: '',
+    date: new Date().toISOString().split('T')[0],
+    startTime: '08:00',
+    endTime: '08:15',
+  });
+  
+  // Patient data state
+  const [patientData, setPatientData] = useState('');
+  const [formattedData, setFormattedData] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState('All Patients');
+  const [patientFilter, setPatientFilter] = useState('All Patients');
+  
+  // Doctor chat state
+  const [chatMessage, setChatMessage] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState('Dr. Sarah Wilson');
+  const [selectedDoctorCategory, setSelectedDoctorCategory] = useState('Cardiology');
+  const [mentionedPatient, setMentionedPatient] = useState('');
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
+  const [patientsList] = useState(['Patient 001', 'Patient 003', 'Patient 005']);
+  const [doctorCategories] = useState([
+    { category: 'Cardiology', doctors: ['Dr. Sarah Wilson', 'Dr. Neha Varma'] },
+    { category: 'Endocrinology', doctors: ['Dr. Aakash Menon'] },
+    { category: 'Neurology', doctors: ['Dr. James Thompson'] },
+    { category: 'Oncology', doctors: ['Dr. Emily Chen'] }
+  ]);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      sender: 'doctor',
+      name: 'Dr. Sarah Wilson',
+      avatar: 'SW',
+      text: 'Patient 001 needs to be monitored for elevated blood pressure. Please check every hour and administer prescribed medication if BP remains above 130/85.',
+      time: '9:30 AM'
+    },
+    {
+      sender: 'nurse',
+      name: 'Nurse Jane',
+      avatar: 'NJ',
+      text: "I've administered the paracetamol as prescribed. The patient's temperature has dropped slightly to 38.5°C. Will continue to monitor.",
+      time: '10:15 AM'
+    },
+    {
+      sender: 'doctor',
+      name: 'Dr. Sarah Wilson',
+      avatar: 'SW',
+      text: "Thank you. If temperature doesn't normalize within the next hour, we may need to consider additional measures. Please ensure patient stays well hydrated.",
+      time: '10:22 AM'
+    },
+    {
+      sender: 'system',
+      text: 'New patient vitals recorded at 10:15 AM'
+    },
+    {
+      sender: 'doctor',
+      name: 'Dr. Sarah Wilson',
+      avatar: 'SW',
+      text: "I've reviewed the latest vitals. Please administer 500mg of acetaminophen and draw blood for additional testing.",
+      time: 'Just now',
+      suggestion: {
+        text: 'Administer acetaminophen 500mg',
+        action: 'Mark as Done'
+      }
+    }
+  ]);
+  
+  // Voice recognition for patient data
+  const { 
+    isListening: isPatientRecording,
+    transcript: patientTranscript, 
+    startListening: startPatientRecording, 
+    stopListening: stopPatientRecording,
+    formatTranscript
+  } = useVoiceRecognition();
+  
+  // Voice recognition for doctor chat
+  const { 
+    isListening: isChatRecording,
+    transcript: chatTranscript, 
+    startListening: startChatRecording, 
+    stopListening: stopChatRecording
+  } = useVoiceRecognition();
+  
+  // Chat scroll reference
+  const chatContainerRef = useRef(null);
+  
+  // Auto-scroll chat to bottom when messages change
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+  
+  // Update patient data from transcript
+  useEffect(() => {
+    if (patientTranscript) {
+      setPatientData(patientTranscript);
+    }
+  }, [patientTranscript]);
+  
+  // Update chat message from transcript
+  useEffect(() => {
+    if (chatTranscript) {
+      setChatMessage(chatTranscript);
+    }
+  }, [chatTranscript]);
+  
+  // Process patient data
+  const processPatientData = () => {
+    if (!patientData.trim()) return;
+    
+    setIsProcessing(true);
+    
+    // In a real app, you might send this to an API for processing
+    // Here we'll just use our simple formatter
+    setTimeout(() => {
+      const formatted = formatTranscript(patientData);
+      setFormattedData(formatted);
+      setIsProcessing(false);
+    }, 1000);
+  };
+  
+  // Handle patient mention
+  const handleMessageChange = (e) => {
+    const value = e.target.value;
+    setChatMessage(value);
+    
+    // Check for @ symbol to trigger patient mention dropdown
+    const lastAtSymbolIndex = value.lastIndexOf('@');
+    if (lastAtSymbolIndex !== -1) {
+      const textAfterAt = value.substring(lastAtSymbolIndex + 1).toLowerCase();
+      if (textAfterAt.length === 0 || patientsList.some(patient => patient.toLowerCase().includes(textAfterAt))) {
+        setShowMentionDropdown(true);
+        setMentionedPatient(textAfterAt);
+      } else {
+        setShowMentionDropdown(false);
+      }
+    } else {
+      setShowMentionDropdown(false);
+    }
+  };
+  
+  // Handle patient selection from dropdown
+  const selectPatient = (patient) => {
+    const lastAtSymbolIndex = chatMessage.lastIndexOf('@');
+    const newMessage = chatMessage.substring(0, lastAtSymbolIndex) + '@' + patient + ' ';
+    setChatMessage(newMessage);
+    setShowMentionDropdown(false);
+  };
+  
+  // Handle doctor category change
+  const handleCategoryChange = (category) => {
+    setSelectedDoctorCategory(category);
+    // Set default doctor for the category
+    const categoryDoctors = doctorCategories.find(c => c.category === category)?.doctors || [];
+    if (categoryDoctors.length > 0) {
+      setSelectedDoctor(categoryDoctors[0]);
+    }
+  };
+
+  // Send chat message
+  const sendChatMessage = () => {
+    if (!chatMessage.trim()) return;
+    
+    // Create a new message object
+    const newMessage = {
+      sender: 'nurse',
+      name: 'Nurse Jane',
+      avatar: 'NJ',
+      text: chatMessage,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    // Add the new message to the chat
+    setChatMessages([...chatMessages, newMessage]);
+    
+    // Clear the input after sending
+    setChatMessage('');
+  };
+
+  // Handle task form change
+  const handleTaskFormChange = (e) => {
+    const { name, value } = e.target;
+    setNewTask(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle task form submit
+  const handleTaskFormSubmit = (e) => {
+    e.preventDefault();
+    // Here you would add the task to your tasks list
+    console.log('New task created:', newTask);
+    // Close the modal
+    setIsTaskModalOpen(false);
+    // Reset form
+    setNewTask({
+      patient: 'Patient 001',
+      taskType: 'Medication',
+      description: '',
+      date: new Date().toISOString().split('T')[0],
+      startTime: '08:00',
+      endTime: '08:15',
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -255,108 +583,223 @@ export default function NurseDashboard() {
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex justify-between items-center">
                   <h3 className="text-lg font-medium text-gray-700">Patient Records</h3>
                   <div className="flex space-x-2">
-                    <select className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                    <select 
+                      className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      value={patientFilter}
+                      onChange={(e) => setPatientFilter(e.target.value)}
+                    >
                       <option>All Patients</option>
                       <option>Active Patients</option>
                       <option>Completed</option>
                     </select>
+                    <select 
+                      className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      value={selectedPatient}
+                      onChange={(e) => setSelectedPatient(e.target.value)}
+                    >
+                      <option value="All Patients">Select Patient</option>
+                      {patientsList.map((patient) => (
+                        <option key={patient} value={patient}>
+                          {patient}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-                <div className="p-4">
-                  <div className="divide-y divide-gray-200">
-                    {/* Patient 001 */}
-                    <div className="py-4 first:pt-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold mr-3">P1</div>
-                          <div>
-                            <h4 className="text-lg font-medium text-gray-800">Patient 001</h4>
-                            <span className="inline-flex rounded-full bg-blue-100 text-blue-700 text-xs px-2 py-1">In Progress</span>
-                          </div>
-                        </div>
-                        <span className="text-sm text-gray-500">Last updated: 10:15 AM</span>
-                      </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">Symptoms</h5>
-                            <p className="text-sm text-gray-600">Fever, cough</p>
-                            
-                            <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Observations</h5>
-                            <p className="text-sm text-gray-600">Elevated temperature</p>
-                          </div>
-                          <div>
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">Vitals</h5>
-                            <div className="flex space-x-4">
-                              <div className="text-sm">
-                                <span className="text-gray-600">BP: </span>
-                                <span className="font-medium">130/85</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="text-gray-600">HR: </span>
-                                <span className="font-medium">98</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="text-gray-600">Temp: </span>
-                                <span className="font-medium">38.5°C</span>
-                              </div>
-                            </div>
-                            
-                            <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Recommendations</h5>
-                            <p className="text-sm text-gray-600">Rest, fluids</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-2 flex justify-end">
-                        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">View Full Record</button>
-                      </div>
+                
+                {/* Voice-enabled Patient Input Card */}
+                <div className="p-4 border-b border-gray-200 bg-blue-50">
+                  <h4 className="text-md font-medium text-gray-700 mb-3">Record Patient Data</h4>
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <button 
+                        className={`flex items-center justify-center ${isPatientRecording ? 'bg-red-600' : 'bg-blue-600'} text-white px-4 py-2 rounded-md text-sm`}
+                        onClick={isPatientRecording ? stopPatientRecording : startPatientRecording}
+                      >
+                        <svg className={`h-4 w-4 mr-1 ${isPatientRecording ? 'animate-pulse' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        {isPatientRecording ? 'Stop Recording' : 'Record Patient Data'}
+                      </button>
+                      <button 
+                        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center"
+                        onClick={processPatientData}
+                        disabled={!patientData.trim() || isProcessing}
+                      >
+                        {isProcessing ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                          </>
+                        ) : (
+                          'Process Data'
+                        )}
+                      </button>
                     </div>
                     
-                    {/* Patient 003 */}
-                    <div className="py-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-semibold mr-3">P3</div>
-                          <div>
-                            <h4 className="text-lg font-medium text-gray-800">Patient 003</h4>
-                            <span className="inline-flex rounded-full bg-yellow-100 text-yellow-700 text-xs px-2 py-1">Waiting</span>
+                    <textarea 
+                      className="w-full p-3 border border-gray-300 rounded-md text-sm h-24 bg-white"
+                      placeholder="Speak or type patient information here..."
+                      value={patientData}
+                      onChange={e => setPatientData(e.target.value)}
+                    />
+                    
+                    {formattedData && (
+                      <div className="bg-white p-4 rounded-md border border-gray-200">
+                        <h5 className="text-sm font-medium text-gray-700 mb-2">Processed Patient Data</h5>
+                        
+                        {formattedData.symptoms.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-xs font-medium text-gray-600">Symptoms:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+                              {formattedData.symptoms.map((symptom, i) => (
+                                <li key={i}>{symptom}</li>
+                              ))}
+                            </ul>
                           </div>
+                        )}
+                        
+                        {formattedData.vitals.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-xs font-medium text-gray-600">Vitals:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+                              {formattedData.vitals.map((vital, i) => (
+                                <li key={i}>{vital}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {formattedData.observations.length > 0 && (
+                          <div className="mb-2">
+                            <p className="text-xs font-medium text-gray-600">Observations:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+                              {formattedData.observations.map((observation, i) => (
+                                <li key={i}>{observation}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        {formattedData.plans.length > 0 && (
+                          <div>
+                            <p className="text-xs font-medium text-gray-600">Plan/Recommendations:</p>
+                            <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+                              {formattedData.plans.map((plan, i) => (
+                                <li key={i}>{plan}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        <div className="mt-3 flex justify-end">
+                          <button className="text-xs bg-blue-600 text-white px-2 py-1 rounded">
+                            Save to Patient Record
+                          </button>
                         </div>
-                        <span className="text-sm text-gray-500">Last updated: 11:30 AM</span>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">Symptoms</h5>
-                            <p className="text-sm text-gray-600">Headache, dizziness</p>
-                            
-                            <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Observations</h5>
-                            <p className="text-sm text-gray-600">Mild dehydration</p>
-                          </div>
-                          <div>
-                            <h5 className="text-sm font-medium text-gray-700 mb-2">Vitals</h5>
-                            <div className="flex space-x-4">
-                              <div className="text-sm">
-                                <span className="text-gray-600">BP: </span>
-                                <span className="font-medium">120/80</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="text-gray-600">HR: </span>
-                                <span className="font-medium">82</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="text-gray-600">Temp: </span>
-                                <span className="font-medium">37.2°C</span>
-                              </div>
+                    )}
+                  </div>
+
+                  <div className="p-4">
+                    <div className="divide-y divide-gray-200">
+                      {/* Patient 001 */}
+                      <div className="py-4 first:pt-0">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold mr-3">P1</div>
+                            <div>
+                              <h4 className="text-lg font-medium text-gray-800">Patient 001</h4>
+                              <span className="inline-flex rounded-full bg-blue-100 text-blue-700 text-xs px-2 py-1">In Progress</span>
                             </div>
-                            
-                            <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Recommendations</h5>
-                            <p className="text-sm text-gray-600">Hydration, rest</p>
+                          </div>
+                          <span className="text-sm text-gray-500">Last updated: 10:15 AM</span>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2">Symptoms</h5>
+                              <p className="text-sm text-gray-600">Fever, cough</p>
+                              
+                              <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Observations</h5>
+                              <p className="text-sm text-gray-600">Elevated temperature</p>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2">Vitals</h5>
+                              <div className="flex space-x-4">
+                                <div className="text-sm">
+                                  <span className="text-gray-600">BP: </span>
+                                  <span className="font-medium">130/85</span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-gray-600">HR: </span>
+                                  <span className="font-medium">98</span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-gray-600">Temp: </span>
+                                  <span className="font-medium">38.5°C</span>
+                                </div>
+                              </div>
+                              
+                              <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Recommendations</h5>
+                              <p className="text-sm text-gray-600">Rest, fluids</p>
+                            </div>
                           </div>
                         </div>
+                        <div className="mt-2 flex justify-end">
+                          <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">View Full Record</button>
+                        </div>
                       </div>
-                      <div className="mt-2 flex justify-end">
-                        <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">View Full Record</button>
+                      
+                      {/* Patient 003 */}
+                      <div className="py-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center">
+                            <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-semibold mr-3">P3</div>
+                            <div>
+                              <h4 className="text-lg font-medium text-gray-800">Patient 003</h4>
+                              <span className="inline-flex rounded-full bg-yellow-100 text-yellow-700 text-xs px-2 py-1">Waiting</span>
+                            </div>
+                          </div>
+                          <span className="text-sm text-gray-500">Last updated: 11:30 AM</span>
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2">Symptoms</h5>
+                              <p className="text-sm text-gray-600">Headache, dizziness</p>
+                              
+                              <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Observations</h5>
+                              <p className="text-sm text-gray-600">Mild dehydration</p>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-medium text-gray-700 mb-2">Vitals</h5>
+                              <div className="flex space-x-4">
+                                <div className="text-sm">
+                                  <span className="text-gray-600">BP: </span>
+                                  <span className="font-medium">120/80</span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-gray-600">HR: </span>
+                                  <span className="font-medium">82</span>
+                                </div>
+                                <div className="text-sm">
+                                  <span className="text-gray-600">Temp: </span>
+                                  <span className="font-medium">37.2°C</span>
+                                </div>
+                              </div>
+                              
+                              <h5 className="text-sm font-medium text-gray-700 mt-3 mb-2">Recommendations</h5>
+                              <p className="text-sm text-gray-600">Hydration, rest</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex justify-end">
+                          <button className="text-sm text-blue-600 hover:text-blue-800 font-medium">View Full Record</button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -543,98 +986,177 @@ export default function NurseDashboard() {
             <div className="grid grid-cols-1 gap-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-700">Doctor Chat</h3>
+                  <h3 className="text-lg font-medium text-gray-700 flex items-center">
+                    <svg className="h-5 w-5 mr-2 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    Doctor Chat
+                  </h3>
                   <div className="flex space-x-2">
-                    <select className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
-                      <option>Dr. Sarah Wilson (Cardiology)</option>
-                      <option>Dr. Neha Varma (Cardiology)</option>
-                      <option>Dr. Aakash Menon (Endocrinology)</option>
-                    </select>
+                    <div className="relative inline-block text-left">
+                      <select 
+                        className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        value={selectedDoctorCategory}
+                        onChange={(e) => handleCategoryChange(e.target.value)}
+                      >
+                        {doctorCategories.map((category) => (
+                          <option key={category.category} value={category.category}>
+                            {category.category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="relative inline-block text-left">
+                      <select 
+                        className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                        value={selectedDoctor}
+                        onChange={(e) => setSelectedDoctor(e.target.value)}
+                      >
+                        {doctorCategories
+                          .find(c => c.category === selectedDoctorCategory)?.doctors
+                          .map((doctor) => (
+                            <option key={doctor} value={doctor}>
+                              {doctor}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
-                <div className="p-0 flex flex-col h-[600px]">
-                  <div className="flex-1 overflow-y-auto p-4">
+                <div className="p-0 flex flex-col h-[600px] bg-gradient-to-b from-blue-50 to-white">
+                  <div 
+                    ref={chatContainerRef}
+                    className="flex-1 overflow-y-auto p-4"
+                  >
                     <div className="space-y-4">
-                      {/* Doctor Message */}
-                      <div className="flex items-start">
-                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold mr-2">
-                          SW
+                      {chatMessages.map((msg, index) => (
+                        <div key={index}>
+                          {msg.sender === 'doctor' && (
+                            <div className="flex items-start">
+                              <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold mr-2 shadow-sm">
+                                {msg.avatar}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs text-purple-700 font-medium mb-1">{msg.name}</span>
+                                <div className="bg-white rounded-lg p-3 shadow-sm border border-purple-100 max-w-[75%]">
+                                  <div className="text-sm text-gray-800">
+                                    {msg.text.split(/@([A-Za-z0-9 ]+)/).map((part, i) => 
+                                      i % 2 === 0 ? part : (
+                                        <span key={i} className="bg-blue-100 text-blue-700 px-1 rounded">
+                                          @{part}
+                                        </span>
+                                      )
+                                    )}
+                                  </div>
+                                  {msg.suggestion && (
+                                    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 mt-2">
+                                      <div className="text-xs font-medium text-yellow-700">Suggested Action</div>
+                                      <div className="text-sm text-gray-800">{msg.suggestion.text}</div>
+                                      <button className="mt-1 text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors">
+                                        {msg.suggestion.action}
+                                      </button>
+                                    </div>
+                                  )}
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {msg.time}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {msg.sender === 'nurse' && (
+                            <div className="flex items-start justify-end">
+                              <div className="flex flex-col items-end">
+                                <span className="text-xs text-blue-700 font-medium mb-1">{msg.name}</span>
+                                <div className="bg-blue-50 rounded-lg p-3 shadow-sm border border-blue-100 max-w-[75%]">
+                                  <div className="text-sm text-gray-800">
+                                    {msg.text.split(/@([A-Za-z0-9 ]+)/).map((part, i) => 
+                                      i % 2 === 0 ? part : (
+                                        <span key={i} className="bg-blue-100 text-blue-700 px-1 rounded">
+                                          @{part}
+                                        </span>
+                                      )
+                                    )}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {msg.time}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold ml-2 shadow-sm">
+                                {msg.avatar}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {msg.sender === 'system' && (
+                            <div className="flex justify-center my-6">
+                              <div className="bg-gray-200 rounded-full px-4 py-1 shadow-sm">
+                                <span className="text-xs text-gray-600">{msg.text}</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <div className="bg-purple-50 rounded-lg p-3 max-w-[75%]">
-                          <div className="text-sm text-gray-800">
-                            Patient 001 needs to be monitored for elevated blood pressure. Please check every hour and administer prescribed medication if BP remains above 130/85.
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            9:30 AM - Dr. Sarah Wilson
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Nurse Message */}
-                      <div className="flex items-start justify-end">
-                        <div className="bg-blue-50 rounded-lg p-3 max-w-[75%]">
-                          <div className="text-sm text-gray-800">
-                            I've administered the paracetamol as prescribed. The patient's temperature has dropped slightly to 38.5°C. Will continue to monitor.
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            10:15 AM - Nurse Jane
-                          </div>
-                        </div>
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold ml-2">
-                          NJ
-                        </div>
-                      </div>
-                      
-                      {/* Doctor Message */}
-                      <div className="flex items-start">
-                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold mr-2">
-                          SW
-                        </div>
-                        <div className="bg-purple-50 rounded-lg p-3 max-w-[75%]">
-                          <div className="text-sm text-gray-800">
-                            Thank you. If temperature doesn't normalize within the next hour, we may need to consider additional measures. Please ensure patient stays well hydrated.
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            10:22 AM - Dr. Sarah Wilson
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* System Message */}
-                      <div className="flex justify-center">
-                        <div className="bg-gray-100 rounded-full px-3 py-1">
-                          <span className="text-xs text-gray-500">New patient vitals recorded at 10:15 AM</span>
-                        </div>
-                      </div>
-                      
-                      {/* Doctor Message with Suggestion */}
-                      <div className="flex items-start">
-                        <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-semibold mr-2">
-                          SW
-                        </div>
-                        <div className="bg-purple-50 rounded-lg p-3 max-w-[75%]">
-                          <div className="text-sm text-gray-800">
-                            I've reviewed the latest vitals. Please administer 500mg of acetaminophen and draw blood for additional testing.
-                          </div>
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-2 mt-2">
-                            <div className="text-xs font-medium text-yellow-700">Suggested Action</div>
-                            <div className="text-sm text-gray-800">Administer acetaminophen 500mg</div>
-                            <button className="mt-1 text-xs bg-blue-600 text-white px-2 py-1 rounded">Mark as Done</button>
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1">
-                            Just now - Dr. Sarah Wilson
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                   
-                  <div className="border-t border-gray-200 p-4">
-                    <div className="flex space-x-2">
-                      <input type="text" className="flex-1 border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2" placeholder="Type your message..." />
-                      <button className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
-                        Send
-                      </button>
+                  <div className="border-t border-gray-200 p-4 bg-white">
+                    <div className="flex flex-col space-y-2">
+                      <div className="relative">
+                        <textarea
+                          className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2 h-20"
+                          placeholder="Type your message... (use @ to mention a patient)"
+                          value={chatMessage}
+                          onChange={handleMessageChange}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              sendChatMessage();
+                            }
+                          }}
+                        />
+                        {showMentionDropdown && (
+                          <div className="absolute bottom-full left-0 mb-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto z-10">
+                            {patientsList
+                              .filter(patient => 
+                                patient.toLowerCase().includes(mentionedPatient.toLowerCase())
+                              )
+                              .map(patient => (
+                                <div 
+                                  key={patient} 
+                                  className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm"
+                                  onClick={() => selectPatient(patient)}
+                                >
+                                  {patient}
+                                </div>
+                              ))
+                            }
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          className={`flex items-center justify-center ${isChatRecording ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} px-4 py-2 rounded-md text-sm flex-none transition-colors shadow-sm`}
+                          onClick={isChatRecording ? stopChatRecording : startChatRecording}
+                        >
+                          <svg className={`h-4 w-4 mr-1 ${isChatRecording ? 'animate-pulse' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                          {isChatRecording ? 'Stop' : 'Record'}
+                        </button>
+                        <button 
+                          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm transition-colors shadow-sm flex items-center justify-center"
+                          onClick={sendChatMessage}
+                          disabled={!chatMessage.trim()}
+                        >
+                          <svg className="h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                          </svg>
+                          Send
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -648,7 +1170,12 @@ export default function NurseDashboard() {
                 <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex justify-between items-center">
                   <h3 className="text-lg font-medium text-gray-700">Schedule</h3>
                   <div className="flex space-x-2">
-                    <button className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md">+ Add Task</button>
+                    <button 
+                      className="text-sm bg-blue-600 text-white px-3 py-1 rounded-md"
+                      onClick={() => setIsTaskModalOpen(true)}
+                    >
+                      + Add Task
+                    </button>
                   </div>
                 </div>
                 <div className="p-4">
@@ -770,6 +1297,128 @@ export default function NurseDashboard() {
           )}
         </div>
       </div>
+      
+      {/* Task scheduling modal */}
+      {isTaskModalOpen && (
+        <>
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={() => setIsTaskModalOpen(false)}></div>
+          <div className="fixed inset-0 flex items-center justify-center z-40 p-4">
+            <div 
+              className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-blue-600 px-4 py-3 flex justify-between items-center">
+                <h3 className="text-lg font-medium text-white">Schedule New Task</h3>
+                <button 
+                  className="text-white hover:text-gray-200"
+                  onClick={() => setIsTaskModalOpen(false)}
+                >
+                  <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <form onSubmit={handleTaskFormSubmit} className="p-4">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Patient</label>
+                    <select 
+                      name="patient"
+                      value={newTask.patient}
+                      onChange={handleTaskFormChange}
+                      className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2"
+                    >
+                      {patientsList.map((patient) => (
+                        <option key={patient} value={patient}>
+                          {patient}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Task Type</label>
+                    <select 
+                      name="taskType"
+                      value={newTask.taskType}
+                      onChange={handleTaskFormChange}
+                      className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2"
+                    >
+                      <option value="Medication">Medication</option>
+                      <option value="Vital Check">Vital Check</option>
+                      <option value="Assessment">Assessment</option>
+                      <option value="Doctor Visit">Doctor Visit</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea 
+                      name="description"
+                      value={newTask.description}
+                      onChange={handleTaskFormChange}
+                      placeholder="Enter task details..."
+                      className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2 h-20"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input 
+                      type="date"
+                      name="date"
+                      value={newTask.date}
+                      onChange={handleTaskFormChange}
+                      className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                      <input 
+                        type="time"
+                        name="startTime"
+                        value={newTask.startTime}
+                        onChange={handleTaskFormChange}
+                        className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                      <input 
+                        type="time"
+                        name="endTime"
+                        value={newTask.endTime}
+                        onChange={handleTaskFormChange}
+                        className="w-full border border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-6">
+                  <button 
+                    type="button"
+                    onClick={() => setIsTaskModalOpen(false)}
+                    className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700"
+                  >
+                    Schedule Task
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </>
+      )}
       
       {/* Notification popup */}
       <div className="fixed top-16 right-4 bg-blue-600 text-white p-3 rounded-lg shadow-lg z-20 flex items-center">
