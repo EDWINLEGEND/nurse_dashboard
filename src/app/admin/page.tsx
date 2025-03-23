@@ -1821,6 +1821,236 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               </div>
+              
+              {/* Hospital Capacity & Staff Utilization Reports */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-6">
+                {/* Hospital Capacity Report */}
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                    <h3 className="text-sm font-medium text-gray-700">Hospital Capacity</h3>
+                    <div className="flex items-center">
+                      <span className="text-xs text-gray-500 mr-2">Live Data</span>
+                      <span className="flex h-3 w-3">
+                        <span className="animate-ping absolute h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative rounded-full h-3 w-3 bg-green-500"></span>
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 sm:p-4">
+                    <div className="space-y-3">
+                      {/* Beds Capacity */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">Beds Occupied</span>
+                          <span className="text-gray-700">76% (152/200)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-orange-500 h-2.5 rounded-full" style={{ width: '76%' }}></div>
+                        </div>
+                      </div>
+                      
+                      {/* ICU Capacity */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">ICU Capacity</span>
+                          <span className="text-gray-700">82% (41/50)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-red-500 h-2.5 rounded-full" style={{ width: '82%' }}></div>
+                        </div>
+                      </div>
+                      
+                      {/* ER Capacity */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">ER Capacity</span>
+                          <span className="text-gray-700">65% (26/40)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-yellow-500 h-2.5 rounded-full" style={{ width: '65%' }}></div>
+                        </div>
+                      </div>
+                      
+                      {/* Operating Rooms */}
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">Operating Rooms</span>
+                          <span className="text-gray-700">50% (6/12)</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-green-500 h-2.5 rounded-full" style={{ width: '50%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <div className="rounded-lg border border-gray-200 p-3">
+                        <div className="text-xs text-gray-500">Available Ventilators</div>
+                        <div className="text-lg font-semibold text-gray-700 flex items-baseline">
+                          18 <span className="text-xs text-gray-500 ml-1">units</span>
+                        </div>
+                      </div>
+                      <div className="rounded-lg border border-gray-200 p-3">
+                        <div className="text-xs text-gray-500">Avg. Length of Stay</div>
+                        <div className="text-lg font-semibold text-gray-700 flex items-baseline">
+                          4.2 <span className="text-xs text-gray-500 ml-1">days</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 text-right">
+                      <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">View Detailed Capacity Report</button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Staff Utilization Report */}
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                  <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                    <h3 className="text-sm font-medium text-gray-700">Staff Utilization</h3>
+                    <select className="text-xs border-gray-300 rounded-md">
+                      <option>Last 7 days</option>
+                      <option>Last 30 days</option>
+                      <option>Last 90 days</option>
+                    </select>
+                  </div>
+                  
+                  <div className="p-3 sm:p-4">
+                    {/* Department Utilization */}
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">Emergency Medicine</span>
+                          <span className="text-gray-700">92% Utilization</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-red-500 h-2.5 rounded-full" style={{ width: '92%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">General Surgery</span>
+                          <span className="text-gray-700">78% Utilization</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-orange-500 h-2.5 rounded-full" style={{ width: '78%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">Cardiology</span>
+                          <span className="text-gray-700">85% Utilization</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-orange-500 h-2.5 rounded-full" style={{ width: '85%' }}></div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="font-medium text-gray-700">Pediatrics</span>
+                          <span className="text-gray-700">68% Utilization</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div className="bg-yellow-500 h-2.5 rounded-full" style={{ width: '68%' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 flex space-x-2 justify-between">
+                      <div className="rounded-md bg-red-50 border border-red-100 px-2 py-1 text-xs">
+                        <div className="font-medium text-red-800">Critical Staffing</div>
+                        <div className="text-red-700">Emergency Medicine</div>
+                      </div>
+                      <div className="rounded-md bg-yellow-50 border border-yellow-100 px-2 py-1 text-xs">
+                        <div className="font-medium text-yellow-800">Overtime Alert</div>
+                        <div className="text-yellow-700">12 staff members</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 text-right">
+                      <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">View Staff Workload Details</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Scheduled Reports Section */}
+              <div className="mt-4 sm:mt-6 bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                  <h3 className="text-sm font-medium text-gray-700">Scheduled Reports</h3>
+                  <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">Schedule New Report</button>
+                </div>
+                
+                <div className="divide-y divide-gray-100">
+                  <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center">
+                    <div className="flex-shrink-0 h-8 w-8 rounded bg-blue-100 flex items-center justify-center text-blue-600">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900">Weekly Department Performance</p>
+                      <p className="text-xs text-gray-500">Every Monday at 8:00 AM • Email to 5 recipients</p>
+                    </div>
+                    <div className="ml-auto flex items-center space-x-2">
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Active</span>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center">
+                    <div className="flex-shrink-0 h-8 w-8 rounded bg-purple-100 flex items-center justify-center text-purple-600">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900">Monthly Financial Summary</p>
+                      <p className="text-xs text-gray-500">1st of every month • Email to finance team</p>
+                    </div>
+                    <div className="ml-auto flex items-center space-x-2">
+                      <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Active</span>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center">
+                    <div className="flex-shrink-0 h-8 w-8 rounded bg-yellow-100 flex items-center justify-center text-yellow-600">
+                      <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-xs sm:text-sm font-medium text-gray-900">Daily Bed Occupancy Report</p>
+                      <p className="text-xs text-gray-500">Daily at 6:00 PM • Dashboard & Email</p>
+                    </div>
+                    <div className="ml-auto flex items-center space-x-2">
+                      <span className="bg-gray-100 text-gray-800 text-xs px-2 py-0.5 rounded-full">Paused</span>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" clipRule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 sm:p-4 text-center">
+                    <button className="text-xs text-blue-600 hover:text-blue-800 font-medium">View All Scheduled Reports</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
