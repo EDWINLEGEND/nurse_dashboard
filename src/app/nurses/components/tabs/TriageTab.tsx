@@ -1,275 +1,568 @@
 import React, { useState } from 'react';
-import { TriageForm, TriageLevel, PatientTriageData } from '../types';
-import { patientTriageData as mockPatientTriageData, defaultTriageForm } from '../data/mockData';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+
+// Triage level types
+type TriageLevel = 'All' | 'Critical' | 'Urgent' | 'Non-urgent';
+type TriageSort = 'Newest' | 'Oldest' | 'Level: High to Low' | 'Level: Low to High';
+
+// Triage case interface
+interface TriageCase {
+  id: string;
+  patientId: string;
+  patientName: string;
+  level: 'Critical' | 'Urgent' | 'Non-urgent';
+  chiefComplaint: string;
+  vitalSigns: {
+    temperature: string;
+    heartRate: string;
+    respiratoryRate: string;
+    bloodPressure: string;
+    oxygenSaturation: string;
+  };
+  painLevel: number;
+  arrivalTime: string;
+  status: 'Waiting' | 'In Assessment' | 'Completed';
+  notes: string;
+}
 
 export default function TriageTab() {
-  const [triageFilter, setTriageFilter] = useState('All Levels');
-  const [triageSort, setTriageSort] = useState('Level');
-  const [patientTriageData] = useState<PatientTriageData[]>(mockPatientTriageData);
-  const [triageForm, setTriageForm] = useState<TriageForm>(defaultTriageForm);
-  const [suggestedTriageLevel, setSuggestedTriageLevel] = useState<TriageLevel | null>(null);
-
-  // Handle triage form change
-  const handleTriageFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  // State for filtering and sorting
+  const [triageFilter, setTriageFilter] = useState<TriageLevel>('All');
+  const [triageSort, setTriageSort] = useState<TriageSort>('Newest');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // State for the triage assessment form
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [assessment, setAssessment] = useState({
+    patientId: '',
+    patientName: '',
+    chiefComplaint: '',
+    painLevel: 5,
+    vitalSigns: {
+      temperature: '',
+      heartRate: '',
+      respiratoryRate: '',
+      bloodPressure: '',
+      oxygenSaturation: '',
+    },
+    level: 'Urgent' as 'Critical' | 'Urgent' | 'Non-urgent',
+    notes: ''
+  });
+  
+  // Sample triage cases data
+  const triageCases: TriageCase[] = [
+    {
+      id: 'TR001',
+      patientId: 'PT001',
+      patientName: 'John Smith',
+      level: 'Urgent',
+      chiefComplaint: 'Severe abdominal pain',
+      vitalSigns: {
+        temperature: '37.8°C',
+        heartRate: '95 bpm',
+        respiratoryRate: '18 breaths/min',
+        bloodPressure: '140/90 mmHg',
+        oxygenSaturation: '98%'
+      },
+      painLevel: 8,
+      arrivalTime: '2023-03-23T08:45:00',
+      status: 'In Assessment',
+      notes: 'Patient reports pain started last night and has been increasing in severity'
+    },
+    {
+      id: 'TR002',
+      patientId: 'PT005',
+      patientName: 'David Lee',
+      level: 'Critical',
+      chiefComplaint: 'Chest pain and shortness of breath',
+      vitalSigns: {
+        temperature: '37.2°C',
+        heartRate: '110 bpm',
+        respiratoryRate: '24 breaths/min',
+        bloodPressure: '160/95 mmHg',
+        oxygenSaturation: '93%'
+      },
+      painLevel: 9,
+      arrivalTime: '2023-03-23T09:15:00',
+      status: 'In Assessment',
+      notes: 'Patient has history of hypertension and diabetes'
+    },
+    {
+      id: 'TR003',
+      patientId: 'PT003',
+      patientName: 'Michael Brown',
+      level: 'Non-urgent',
+      chiefComplaint: 'Mild fever and sore throat',
+      vitalSigns: {
+        temperature: '38.1°C',
+        heartRate: '82 bpm',
+        respiratoryRate: '16 breaths/min',
+        bloodPressure: '130/85 mmHg',
+        oxygenSaturation: '99%'
+      },
+      painLevel: 3,
+      arrivalTime: '2023-03-23T10:30:00',
+      status: 'Waiting',
+      notes: 'Symptoms began 2 days ago, no known exposures'
+    },
+    {
+      id: 'TR004',
+      patientId: 'PT004',
+      patientName: 'Amanda Garcia',
+      level: 'Urgent',
+      chiefComplaint: 'Dizziness and nausea',
+      vitalSigns: {
+        temperature: '36.9°C',
+        heartRate: '88 bpm',
+        respiratoryRate: '17 breaths/min',
+        bloodPressure: '100/70 mmHg',
+        oxygenSaturation: '97%'
+      },
+      painLevel: 2,
+      arrivalTime: '2023-03-23T11:20:00',
+      status: 'Waiting',
+      notes: 'Patient reports not having eaten since yesterday'
+    }
+  ];
+  
+  // Handle form input changes
+  const handleAssessmentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setTriageForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
     
-    // Simple logic to suggest triage level based on pain level
-    // In real application, this would be more complex AI-based
-    if (name === 'painLevel') {
-      const pain = parseInt(value);
-      if (pain >= 9) {
-        setSuggestedTriageLevel({ level: 1, text: 'Immediate', color: 'red' });
-      } else if (pain >= 7) {
-        setSuggestedTriageLevel({ level: 2, text: 'Urgent', color: 'orange' });
-      } else if (pain >= 5) {
-        setSuggestedTriageLevel({ level: 3, text: 'Less Urgent', color: 'yellow' });
-      } else if (pain >= 3) {
-        setSuggestedTriageLevel({ level: 4, text: 'Non-Urgent', color: 'green' });
-      } else {
-        setSuggestedTriageLevel({ level: 5, text: 'Routine', color: 'blue' });
+    setAssessment(prev => {
+      if (name.includes('.')) {
+        const [parent, child] = name.split('.');
+        return {
+          ...prev,
+          [parent]: {
+            ...(prev as any)[parent],
+            [child]: value
+          }
+        };
       }
+      return { ...prev, [name]: value };
+    });
+  };
+  
+  // Handle select changes with shadcn UI
+  const handleLevelChange = (value: string) => {
+    setAssessment(prev => ({
+      ...prev,
+      level: value as 'Critical' | 'Urgent' | 'Non-urgent'
+    }));
+  };
+
+  // Handle pain level change
+  const handlePainLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAssessment(prev => ({
+      ...prev,
+      painLevel: parseInt(e.target.value, 10)
+    }));
+  };
+  
+  // Handle submitting the triage assessment
+  const handleSubmitTriage = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Submitted triage assessment:', assessment);
+    setShowAssessment(false);
+    // Here we would normally add the new triage case to the list
+  };
+  
+  // Filter and sort cases
+  const filteredCases = triageCases.filter(triageCase => {
+    // Apply level filter
+    if (triageFilter !== 'All' && triageCase.level !== triageFilter) {
+      return false;
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        triageCase.patientName.toLowerCase().includes(searchLower) ||
+        triageCase.patientId.toLowerCase().includes(searchLower) ||
+        triageCase.chiefComplaint.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    return true;
+  }).sort((a, b) => {
+    // Apply sorting
+    switch (triageSort) {
+      case 'Newest':
+        return new Date(b.arrivalTime).getTime() - new Date(a.arrivalTime).getTime();
+      case 'Oldest':
+        return new Date(a.arrivalTime).getTime() - new Date(b.arrivalTime).getTime();
+      case 'Level: High to Low':
+        const levelOrder = { Critical: 3, Urgent: 2, 'Non-urgent': 1 };
+        return levelOrder[b.level] - levelOrder[a.level];
+      case 'Level: Low to High':
+        const levelOrderReverse = { Critical: 3, Urgent: 2, 'Non-urgent': 1 };
+        return levelOrderReverse[a.level] - levelOrderReverse[b.level];
+      default:
+        return 0;
+    }
+  });
+  
+  // Helper function to get the appropriate styling for triage level
+  const getTriageLevelStyle = (level: TriageCase['level']) => {
+    switch (level) {
+      case 'Critical':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'Urgent':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'Non-urgent':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
   
-  // Handle triage form submit
-  const handleTriageFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Triage assessment submitted:', triageForm, suggestedTriageLevel);
-    // Reset form
-    setTriageForm(defaultTriageForm);
-    setSuggestedTriageLevel(null);
+  // Helper function to get the appropriate styling for triage status
+  const getTriageStatusStyle = (status: TriageCase['status']) => {
+    switch (status) {
+      case 'Waiting':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'In Assessment':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Completed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
   };
-
+  
+  // Format date and time for display
+  const formatDateTime = (dateTimeString: string) => {
+    const date = new Date(dateTimeString);
+    // Use ISO format to avoid locale-specific date formatting issues
+    return date.toISOString().split('T')[0] + ' ' + 
+      date.toTimeString().split(' ')[0].substring(0, 5);
+  };
+  
   return (
     <div className="grid grid-cols-1 gap-4 sm:gap-6">
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="border-b border-gray-200 bg-gray-50 px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-medium text-gray-800">Triage</h3>
-          <div className="flex flex-col xs:flex-row w-full sm:w-auto space-y-2 xs:space-y-0 xs:space-x-2">
-            <select
-              value={triageFilter}
-              onChange={(e) => setTriageFilter(e.target.value)}
-              className="text-xs sm:text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+          <h3 className="text-lg font-medium text-gray-800">Triage Management</h3>
+          <div className="flex flex-col sm:flex-row w-full sm:w-auto space-y-2 sm:space-y-0 sm:space-x-2">
+            <div className="w-full sm:w-auto">
+              <Select value={triageFilter} onValueChange={(value) => setTriageFilter(value as TriageLevel)}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Filter by Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="All">All Levels</SelectItem>
+                  <SelectItem value="Critical">Critical</SelectItem>
+                  <SelectItem value="Urgent">Urgent</SelectItem>
+                  <SelectItem value="Non-urgent">Non-urgent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-full sm:w-auto">
+              <Select value={triageSort} onValueChange={(value) => setTriageSort(value as TriageSort)}>
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Newest">Newest First</SelectItem>
+                  <SelectItem value="Oldest">Oldest First</SelectItem>
+                  <SelectItem value="Level: High to Low">Level: High to Low</SelectItem>
+                  <SelectItem value="Level: Low to High">Level: Low to High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="relative flex-grow max-w-md">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Search patient or complaint..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={() => setShowAssessment(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex-shrink-0"
             >
-              <option value="All Levels">All Levels</option>
-              <option value="Level 1">Level 1 - Immediate</option>
-              <option value="Level 2">Level 2 - Urgent</option>
-              <option value="Level 3">Level 3 - Less Urgent</option>
-              <option value="Level 4">Level 4 - Non-Urgent</option>
-              <option value="Level 5">Level 5 - Routine</option>
-            </select>
-            <select
-              value={triageSort}
-              onChange={(e) => setTriageSort(e.target.value)}
-              className="text-xs sm:text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
-              <option value="Level">Sort by Level</option>
-              <option value="Time">Sort by Time</option>
-              <option value="Status">Sort by Status</option>
-            </select>
+              New Assessment
+            </button>
           </div>
         </div>
+        
         <div className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div>
-              <h4 className="text-base font-medium text-gray-800 mb-3">Active Triage Cases</h4>
-              <div className="space-y-3">
-                {patientTriageData
-                  .filter(patient => triageFilter === 'All Levels' || 
-                            `Level ${patient.level}` === triageFilter)
-                  .sort((a, b) => {
-                    if (triageSort === 'Level') return a.level - b.level;
-                    if (triageSort === 'Time') return a.time.localeCompare(b.time);
-                    return a.status.localeCompare(b.status);
-                  })
-                  .map(patient => (
-                    <div 
-                      key={patient.id} 
-                      className="border rounded-lg overflow-hidden shadow-sm"
-                    >
-                      <div 
-                        className="p-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"
-                        style={{ backgroundColor: patient.level === 1 ? '#FEE2E2' : 
-                                                patient.level === 2 ? '#FFEDD5' : 
-                                                patient.level === 3 ? '#FEF3C7' : 
-                                                patient.level === 4 ? '#D1FAE5' : 
-                                                '#DBEAFE' }}
-                      >
-                        <div className="flex items-center">
-                          <div 
-                            className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-bold mr-2"
-                            style={{ backgroundColor: patient.level === 1 ? '#EF4444' : 
-                                                    patient.level === 2 ? '#F97316' : 
-                                                    patient.level === 3 ? '#EAB308' : 
-                                                    patient.level === 4 ? '#10B981' : 
-                                                    '#3B82F6' }}
-                          >
-                            {patient.level}
-                          </div>
-                          <div>
-                            <div className="text-sm font-medium">{patient.id}</div>
-                            <div className="text-xs">{patient.levelText} - {patient.time}</div>
-                          </div>
-                        </div>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          patient.status === 'Waiting' ? 'bg-yellow-100 text-yellow-800' : 
-                          patient.status === 'In Progress' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {patient.status}
-                        </span>
-                      </div>
-                      <div className="p-3 bg-white">
-                        <div className="grid grid-cols-1 gap-2">
-                          <div>
-                            <div className="text-xs text-gray-700">Chief Complaint</div>
-                            <p className="font-medium">{patient.complaint}</p>
-                          </div>
-                          <div>
-                            <div className="text-xs text-gray-700">Vitals</div>
-                            <p className="text-gray-800">{patient.vitals}</p>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between">
-                          <button className="text-xs bg-gray-50 text-gray-800 px-2 py-1 rounded border border-gray-200">
-                            View Details
-                          </button>
-                          <button className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded border border-blue-200">
-                            {patient.status === 'Waiting' ? 'Start Assessment' : 'Update Status'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h4 className="text-base font-medium text-blue-800 mb-3">New Triage Assessment</h4>
-              <form onSubmit={handleTriageFormSubmit} className="space-y-4">
+          {showAssessment ? (
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mb-6">
+              <h4 className="text-lg font-medium text-gray-800 mb-4">New Triage Assessment</h4>
+              <form onSubmit={handleSubmitTriage} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Patient ID</label>
-                    <input 
-                      type="text" 
-                      name="patientId" 
-                      value={triageForm.patientId} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="Enter patient ID" 
-                    />
-                  </div>
-                  <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Chief Complaint</label>
-                    <textarea 
-                      name="chiefComplaint" 
-                      value={triageForm.chiefComplaint} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="Enter chief complaint" 
-                      rows={2}
-                    ></textarea>
-                  </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Pain Level (1-10)</label>
-                    <input 
-                      type="range" 
-                      name="painLevel" 
-                      value={triageForm.painLevel} 
-                      onChange={handleTriageFormChange}
-                      min="1" 
-                      max="10" 
-                      className="w-full" 
-                    />
-                    <div className="flex justify-between text-xs text-gray-700 mt-1">
-                      <span>No pain (1)</span>
-                      <span>Worst pain (10)</span>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Temperature</label>
-                    <input 
-                      type="text" 
-                      name="temperature" 
-                      value={triageForm.temperature} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="e.g. 98.6 F" 
+                    <label htmlFor="patientId" className="block text-sm font-medium text-gray-700 mb-1">
+                      Patient ID
+                    </label>
+                    <input
+                      type="text"
+                      id="patientId"
+                      name="patientId"
+                      value={assessment.patientId}
+                      onChange={handleAssessmentChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                      required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Blood Pressure</label>
-                    <input 
-                      type="text" 
-                      name="bloodPressure" 
-                      value={triageForm.bloodPressure} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="e.g. 120/80" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Heart Rate</label>
-                    <input 
-                      type="text" 
-                      name="heartRate" 
-                      value={triageForm.heartRate} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="e.g. 72 bpm" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Respiration Rate</label>
-                    <input 
-                      type="text" 
-                      name="respiration" 
-                      value={triageForm.respiration} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="e.g. 16/min" 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-800 mb-1">Oxygen Saturation</label>
-                    <input 
-                      type="text" 
-                      name="oxygenSaturation" 
-                      value={triageForm.oxygenSaturation} 
-                      onChange={handleTriageFormChange}
-                      className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm" 
-                      placeholder="e.g. 98%" 
+                    <label htmlFor="patientName" className="block text-sm font-medium text-gray-700 mb-1">
+                      Patient Name
+                    </label>
+                    <input
+                      type="text"
+                      id="patientName"
+                      name="patientName"
+                      value={assessment.patientName}
+                      onChange={handleAssessmentChange}
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                      required
                     />
                   </div>
                 </div>
                 
-                {suggestedTriageLevel && (
-                  <div className="mt-4 p-3 rounded-lg border" style={{ backgroundColor: `${suggestedTriageLevel.level === 1 ? '#FEE2E2' : suggestedTriageLevel.level === 2 ? '#FFEDD5' : suggestedTriageLevel.level === 3 ? '#FEF3C7' : suggestedTriageLevel.level === 4 ? '#D1FAE5' : '#DBEAFE'}` }}>
-                    <div className="flex items-center mb-2">
-                      <div 
-                        className="h-6 w-6 rounded-full flex items-center justify-center text-white text-xs font-bold mr-2"
-                        style={{ backgroundColor: `${suggestedTriageLevel.level === 1 ? '#EF4444' : suggestedTriageLevel.level === 2 ? '#F97316' : suggestedTriageLevel.level === 3 ? '#EAB308' : suggestedTriageLevel.level === 4 ? '#10B981' : '#3B82F6'}` }}
-                      >
-                        {suggestedTriageLevel.level}
-                      </div>
-                      <div className="text-sm font-medium">
-                        Suggested Triage: Level {suggestedTriageLevel.level} - {suggestedTriageLevel.text}
-                      </div>
-                    </div>
-                    <p className="text-xs text-gray-800">Based on the pain level and symptoms provided</p>
-                  </div>
-                )}
+                <div>
+                  <label htmlFor="chiefComplaint" className="block text-sm font-medium text-gray-700 mb-1">
+                    Chief Complaint
+                  </label>
+                  <input
+                    type="text"
+                    id="chiefComplaint"
+                    name="chiefComplaint"
+                    value={assessment.chiefComplaint}
+                    onChange={handleAssessmentChange}
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    required
+                  />
+                </div>
                 
-                <div className="flex justify-end">
-                  <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm">
-                    Submit Assessment
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Pain Level: {assessment.painLevel}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    step="1"
+                    value={assessment.painLevel}
+                    onChange={handlePainLevelChange}
+                    className="block w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0 - No Pain</span>
+                    <span>10 - Worst Pain</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="vitalSigns.temperature" className="block text-sm font-medium text-gray-700 mb-1">
+                      Temperature
+                    </label>
+                    <input
+                      type="text"
+                      id="vitalSigns.temperature"
+                      name="vitalSigns.temperature"
+                      value={assessment.vitalSigns.temperature}
+                      onChange={handleAssessmentChange}
+                      placeholder="e.g., 37.0°C"
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="vitalSigns.heartRate" className="block text-sm font-medium text-gray-700 mb-1">
+                      Heart Rate
+                    </label>
+                    <input
+                      type="text"
+                      id="vitalSigns.heartRate"
+                      name="vitalSigns.heartRate"
+                      value={assessment.vitalSigns.heartRate}
+                      onChange={handleAssessmentChange}
+                      placeholder="e.g., 72 bpm"
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="vitalSigns.respiratoryRate" className="block text-sm font-medium text-gray-700 mb-1">
+                      Respiratory Rate
+                    </label>
+                    <input
+                      type="text"
+                      id="vitalSigns.respiratoryRate"
+                      name="vitalSigns.respiratoryRate"
+                      value={assessment.vitalSigns.respiratoryRate}
+                      onChange={handleAssessmentChange}
+                      placeholder="e.g., 16 breaths/min"
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="vitalSigns.bloodPressure" className="block text-sm font-medium text-gray-700 mb-1">
+                      Blood Pressure
+                    </label>
+                    <input
+                      type="text"
+                      id="vitalSigns.bloodPressure"
+                      name="vitalSigns.bloodPressure"
+                      value={assessment.vitalSigns.bloodPressure}
+                      onChange={handleAssessmentChange}
+                      placeholder="e.g., 120/80 mmHg"
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="vitalSigns.oxygenSaturation" className="block text-sm font-medium text-gray-700 mb-1">
+                      Oxygen Saturation
+                    </label>
+                    <input
+                      type="text"
+                      id="vitalSigns.oxygenSaturation"
+                      name="vitalSigns.oxygenSaturation"
+                      value={assessment.vitalSigns.oxygenSaturation}
+                      onChange={handleAssessmentChange}
+                      placeholder="e.g., 98%"
+                      className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
+                      Triage Level
+                    </label>
+                    <Select value={assessment.level} onValueChange={handleLevelChange}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="Select Level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Critical">Critical</SelectItem>
+                        <SelectItem value="Urgent">Urgent</SelectItem>
+                        <SelectItem value="Non-urgent">Non-urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={3}
+                    value={assessment.notes}
+                    onChange={handleAssessmentChange}
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
+                  ></textarea>
+                </div>
+                
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAssessment(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                  >
+                    Save Assessment
                   </button>
                 </div>
               </form>
+            </div>
+          ) : null}
+          
+          <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Patient
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Level
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Chief Complaint
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Arrival Time
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredCases.length > 0 ? (
+                    filteredCases.map((triageCase) => (
+                      <tr key={triageCase.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">{triageCase.patientName}</div>
+                              <div className="text-sm text-gray-500">{triageCase.patientId}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${getTriageLevelStyle(triageCase.level)}`}>
+                            {triageCase.level}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-sm text-gray-900">{triageCase.chiefComplaint}</div>
+                          <div className="text-xs text-gray-500">
+                            Pain Level: {triageCase.painLevel}/10
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {formatDateTime(triageCase.arrivalTime)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${getTriageStatusStyle(triageCase.status)}`}>
+                            {triageCase.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                          <button className="text-blue-600 hover:text-blue-900 mr-2">View</button>
+                          <button className="text-blue-600 hover:text-blue-900">Update</button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
+                        No triage cases found with the current filters.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>

@@ -14,6 +14,11 @@ import TaskModal from './components/modals/TaskModal';
 import MedicationModal from './components/modals/MedicationModal';
 import { defaultTask, defaultMedication } from './components/data/mockData';
 
+// Format date in a consistent way to avoid hydration errors
+const formatDate = (date: Date) => {
+  return date.toISOString().split('T')[0].replace(/-/g, '/');
+};
+
 export default function NurseDashboard() {
   const [activeTab, setActiveTab] = useState('dashboard');
   
@@ -59,6 +64,9 @@ export default function NurseDashboard() {
     setNewMedication(defaultMedication);
   };
 
+  // Get today's date in a consistent format
+  const today = formatDate(new Date());
+
   // Render the active tab content
   const renderTabContent = () => {
     switch (activeTab) {
@@ -98,7 +106,7 @@ export default function NurseDashboard() {
                 <span className="h-2 w-2 bg-green-400 rounded-full mr-1"></span>
                 Online
               </span>
-              <span>Today: {new Date().toLocaleDateString()}</span>
+              <span>Today: {today}</span>
             </div>
           </div>
         </div>

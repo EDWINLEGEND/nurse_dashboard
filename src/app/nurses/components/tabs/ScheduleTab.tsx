@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 interface Task {
   id: string;
@@ -171,6 +178,16 @@ export default function ScheduleTab() {
     }
   };
 
+  const getStatusColor = (status: Task['status']) => {
+    switch (status) {
+      case 'Completed': return 'text-green-700 bg-green-100';
+      case 'In Progress': return 'text-blue-700 bg-blue-100';
+      case 'Upcoming': return 'text-yellow-700 bg-yellow-100';
+      case 'Overdue': return 'text-red-700 bg-red-100';
+      default: return 'text-gray-800 bg-gray-100';
+    }
+  };
+
   const getTypeIcon = (type: Task['type']) => {
     switch (type) {
       case 'Medication':
@@ -212,16 +229,6 @@ export default function ScheduleTab() {
     }
   };
 
-  const getStatusColor = (status: Task['status']) => {
-    switch (status) {
-      case 'Completed': return 'text-green-700 bg-green-100';
-      case 'In Progress': return 'text-blue-700 bg-blue-100';
-      case 'Upcoming': return 'text-yellow-700 bg-yellow-100';
-      case 'Overdue': return 'text-red-700 bg-red-100';
-      default: return 'text-gray-800 bg-gray-100';
-    }
-  };
-
   const handleTaskChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewTask(prev => ({
@@ -230,13 +237,26 @@ export default function ScheduleTab() {
     }));
   };
 
-  const handlePatientSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const patientId = e.target.value;
-    const patient = patients.find(p => p.id === patientId);
+  const handleTaskTypeChange = (value: string) => {
+    setNewTask(prev => ({
+      ...prev,
+      type: value as Task['type']
+    }));
+  };
+
+  const handlePriorityChange = (value: string) => {
+    setNewTask(prev => ({
+      ...prev,
+      priority: value as Task['priority']
+    }));
+  };
+
+  const handlePatientSelect = (value: string) => {
+    const patient = patients.find(p => p.id === value);
     
     setNewTask(prev => ({
       ...prev,
-      patientId: patientId,
+      patientId: value,
       patientName: patient ? patient.name : ''
     }));
   };
@@ -257,20 +277,21 @@ export default function ScheduleTab() {
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="h-9 text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             />
-            <select
-              value={patientFilter}
-              onChange={(e) => setPatientFilter(e.target.value)}
-              className="text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            >
-              <option value="All">All Patients</option>
-              {patients.map(patient => (
-                <option key={patient.id} value={patient.id}>
-                  {patient.name}
-                </option>
-              ))}
-            </select>
+            <Select value={patientFilter} onValueChange={setPatientFilter}>
+              <SelectTrigger className="text-sm h-9">
+                <SelectValue placeholder="Select patient" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All">All Patients</SelectItem>
+                {patients.map(patient => (
+                  <SelectItem key={patient.id} value={patient.id}>
+                    {patient.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="relative flex-grow max-w-xs">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <svg className="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
@@ -360,17 +381,17 @@ export default function ScheduleTab() {
                     <div key={task.id} className="bg-white rounded-md shadow-sm border border-gray-200 p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center">
-                          <span className="text-gray-500 text-sm mr-2">{task.startTime} - {task.endTime}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
+                          <span className="text-gray-700 text-sm mr-2">{task.startTime} - {task.endTime}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(task.status)}`}>
+                            {task.status}
                           </span>
                         </div>
-                        <div className="flex items-center text-gray-500">
+                        <div className="flex items-center text-gray-700">
                           {getTypeIcon(task.type)}
                         </div>
                       </div>
-                      <h5 className="font-medium text-gray-800 mb-1">{task.title}</h5>
-                      <p className="text-sm text-gray-600 mb-2">{task.patientName}</p>
+                      <h5 className="font-medium text-gray-900 mb-1">{task.title}</h5>
+                      <p className="text-sm text-gray-700 mb-2">{task.patientName}</p>
                       
                       <button 
                         onClick={() => setViewTask(viewTask === task.id ? null : task.id)} 
@@ -381,7 +402,7 @@ export default function ScheduleTab() {
                       
                       {viewTask === task.id && (
                         <div className="mt-2 pt-2 border-t border-gray-100">
-                          <p className="text-sm text-gray-600">{task.description}</p>
+                          <p className="text-sm text-gray-700">{task.description}</p>
                           <div className="flex space-x-2 mt-2">
                             <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs border border-blue-200">
                               Complete
@@ -411,17 +432,17 @@ export default function ScheduleTab() {
                     <div key={task.id} className="bg-white rounded-md shadow-sm border border-gray-200 p-3">
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center">
-                          <span className="text-gray-500 text-sm mr-2">{task.startTime} - {task.endTime}</span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
+                          <span className="text-gray-700 text-sm mr-2">{task.startTime} - {task.endTime}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(task.status)}`}>
+                            {task.status}
                           </span>
                         </div>
-                        <div className="flex items-center text-gray-500">
+                        <div className="flex items-center text-gray-700">
                           {getTypeIcon(task.type)}
                         </div>
                       </div>
-                      <h5 className="font-medium text-gray-800 mb-1">{task.title}</h5>
-                      <p className="text-sm text-gray-600 mb-2">{task.patientName}</p>
+                      <h5 className="font-medium text-gray-900 mb-1">{task.title}</h5>
+                      <p className="text-sm text-gray-700 mb-2">{task.patientName}</p>
                       
                       <button 
                         onClick={() => setViewTask(viewTask === task.id ? null : task.id)} 
@@ -432,7 +453,7 @@ export default function ScheduleTab() {
                       
                       {viewTask === task.id && (
                         <div className="mt-2 pt-2 border-t border-gray-100">
-                          <p className="text-sm text-gray-600">{task.description}</p>
+                          <p className="text-sm text-gray-700">{task.description}</p>
                           <div className="flex space-x-2 mt-2">
                             <button className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-xs border border-blue-200">
                               Complete
@@ -489,41 +510,36 @@ export default function ScheduleTab() {
                             <label htmlFor="patientId" className="block text-sm font-medium text-gray-700 mb-1">
                               Patient
                             </label>
-                            <select
-                              id="patientId"
-                              name="patientId"
-                              value={newTask.patientId}
-                              onChange={handlePatientSelect}
-                              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
-                              required
-                            >
-                              <option value="">Select Patient</option>
-                              {patients.map(patient => (
-                                <option key={patient.id} value={patient.id}>
-                                  {patient.name} ({patient.id})
-                                </option>
-                              ))}
-                            </select>
+                            <Select value={newTask.patientId} onValueChange={handlePatientSelect}>
+                              <SelectTrigger className="w-full h-9 text-sm">
+                                <SelectValue placeholder="Select Patient" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {patients.map(patient => (
+                                  <SelectItem key={patient.id} value={patient.id}>
+                                    {patient.name} ({patient.id})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
                           
                           <div>
                             <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
                               Task Type
                             </label>
-                            <select
-                              id="type"
-                              name="type"
-                              value={newTask.type}
-                              onChange={handleTaskChange}
-                              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
-                              required
-                            >
-                              <option value="Assessment">Assessment</option>
-                              <option value="Medication">Medication</option>
-                              <option value="Treatment">Treatment</option>
-                              <option value="Follow-up">Follow-up</option>
-                              <option value="Documentation">Documentation</option>
-                            </select>
+                            <Select value={newTask.type} onValueChange={handleTaskTypeChange}>
+                              <SelectTrigger className="w-full h-9 text-sm">
+                                <SelectValue placeholder="Select Task Type" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Assessment">Assessment</SelectItem>
+                                <SelectItem value="Medication">Medication</SelectItem>
+                                <SelectItem value="Treatment">Treatment</SelectItem>
+                                <SelectItem value="Follow-up">Follow-up</SelectItem>
+                                <SelectItem value="Documentation">Documentation</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                           
                           <div>
@@ -560,19 +576,17 @@ export default function ScheduleTab() {
                               <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
                                 Priority
                               </label>
-                              <select
-                                id="priority"
-                                name="priority"
-                                value={newTask.priority}
-                                onChange={handleTaskChange}
-                                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 text-sm"
-                                required
-                              >
-                                <option value="Low">Low</option>
-                                <option value="Medium">Medium</option>
-                                <option value="High">High</option>
-                                <option value="Urgent">Urgent</option>
-                              </select>
+                              <Select value={newTask.priority} onValueChange={handlePriorityChange}>
+                                <SelectTrigger className="w-full h-9 text-sm">
+                                  <SelectValue placeholder="Select Priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Low">Low</SelectItem>
+                                  <SelectItem value="Medium">Medium</SelectItem>
+                                  <SelectItem value="High">High</SelectItem>
+                                  <SelectItem value="Urgent">Urgent</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
                           
